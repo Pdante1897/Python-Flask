@@ -1,13 +1,13 @@
 from flask import Blueprint, request, jsonify
-from DataBase.conexion import get_db_connection
+from database.conexion import get_db_connection
+
+#Crear conexion a la base de datos y hacer un select a la tabla pelicula
+conn = get_db_connection()
+
 
 api_bp = Blueprint("api_v1", __name__)
 
-conn = get_db_connection()
-if conn:
-    print("Conexión a la base de datos establecida en Api_v1")
-else:    
-    print("No se pudo establecer la conexión a la base de datos en Api_v1")
+
 
 @api_bp.route("/", methods=["GET"])
 def index():
@@ -21,21 +21,22 @@ def validacion(usuarios):
     else:
         return "Son " + str(usuarios) + " usuarios y no se cumple la condicion"
 
-
+#hacer un select a la tabla pelicula
 @api_bp.route("/peliculas", methods=["GET"])
 def get_peliculas():
     cursor = conn.cursor()
-    cursor.execute("select * from pelicula;")
+    cursor.execute("SELECT * FROM pelicula")
     peliculas = cursor.fetchall()
     cursor.close()
+    conn.close()
     return jsonify(peliculas)
 
-@api_bp.route("/peliculas/<int:id>&<int:anio>", methods=["GET"])
-def get_peliculas_id(id, anio):
+#hacer un insert a la tabla pelicula
+@api_bp.route("/peliculas", methods=["POST"])
+def post_peliculas():
     cursor = conn.cursor()
-    cursor.execute("select * from pelicula where id = %s AND anio = %s;", [id, anio])
-    peliculas = cursor.fetchall()
+    cursor.execute("INSERT INTO pelicula (titulo, director) VALUES (%s, %s)", ("Pelicula de prueba", "Director de prueba"))
+    conn.commit()
     cursor.close()
-    return jsonify(peliculas)
-
-
+    conn.close()
+    return "Pelicula insertada correctamente"
